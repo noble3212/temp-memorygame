@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CompTIA Quiz</title>
+  <style>
+    /* Base reset */
+    body, html {
+      margin: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background-color: #1e293b;
+      padding: 1.5rem;
+      width: 200px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .sidebar h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .sidebar button.quiz-select {
+      background-color: #334155;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.2s ease;
+    }
+
+    .sidebar button.quiz-select.active,
+    .sidebar button.quiz-select:hover {
+      background-color: #2563eb;
+    }
+
+    /* Quiz container */
+    .quiz-container {
+      flex: 1;
+      max-width: 600px;
+      margin: auto;
+      padding: 2rem;
+      border-radius: 8px;
+      background-color: #1e293b;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .quiz-container h1 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    #question-box {
+      flex-grow: 1;
+    }
+
+    #question {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    #options button {
+      display: block;
+      margin: 10px 0;
+      padding: 10px;
+      width: 100%;
+      background: #334155;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.2s ease;
+    }
+
+    #options button:hover:not(:disabled) {
+      background: #475569;
+    }
+
+    #next-btn {
+      margin-top: 20px;
+      padding: 10px;
+      width: 100%;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: none; /* Hidden initially */
+    }
+
+    #score {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <h2>Select Quiz</h2>
+      <button id="networkPlusBtn" class="quiz-select active">CompTIA Network+</button>
+      <button id="aPlusBtn" class="quiz-select">CompTIA A+</button>
+    </aside>
+
+    <div class="quiz-container">
+      <h1 id="quiz-title">CompTIA Network+ Quiz</h1>
+      <div id="question-box">
+        <p id="question">Loading question...</p>
+        <div id="options"></div>
+      </div>
+      <button id="next-btn">Next</button>
+      <div id="score"></div>
+    </div>
+  </div>
+
+  <script>
+    // Your existing Network+ quiz data
+    const networkPlusQuiz = [
+      {
+        question: "Which device operates at Layer 3 of the OSI model?",
+        options: ["Switch", "Router", "Hub", "Repeater"],
+        answer: "Router"
+      },
+      {
+        question: "What protocol is used to translate domain names into IP addresses?",
+        options: ["DHCP", "FTP", "DNS", "SSH"],
+        answer: "DNS"
+      },
+      {
+        question: "Which of the following uses port 443 by default?",
+        options: ["HTTP", "FTP", "HTTPS", "Telnet"],
+        answer: "HTTPS"
+      },
+      {
+        question: "Which topology requires a central device?",
+        options: ["Bus", "Ring", "Mesh", "Star"],
+        answer: "Star"
+      },
+      {
+        question: "Which layer of the OSI model is responsible for end-to-end communication?",
+        options: ["Session", "Transport", "Network", "Data Link"],
+        answer: "Transport"
+      },
+      {
+        question: "Which layer of the OSI model is responsible for routing packets to their destination across multiple networks?",
+        options: ["Network", "Transport", "Data Link", "Application"],
+        answer: "Network"
+      },
+      {
+        question: "Which layer of the OSI model deals with mechanical and electrical specifications (e.g., RJ45)?",
+        options: ["Physical", "Data Link", "Network", "Transport"],
+        answer: "Physical"
+      },
+      {
+        question: "What is the primary function of the TCP protocol in network communication?",
+        options: ["Encryption of data", "Routing of data packets", "Ensuring reliable data transfer", "Compressing data"],
+        answer: "Ensuring reliable data transfer"
+      },
+      {
+        question: "Which protocol is commonly used for automatically assigning IP addresses to devices on a network?",
+        options: ["DHCP", "FTP", "HTTP", "SNMP"],
+        answer: "DHCP"
+      },
+      {
+        question: "Which layer of the OSI model is responsible for translating data from the application layer into a format suitable for transmission?",
+        options: ["Presentation", "Transport", "Data Link", "Network"],
+        answer: "Presentation"
+      },
+      {
+        question: "What does NAT stand for in networking?",
+        options: ["Network Address Translation", "Native Address Tracker", "Network Administration Tool", "Network Application Testing"],
+        answer: "Network Address Translation"
+      },
+      {
+        question: "What is the purpose of a default gateway in a network?",
+        options: ["To route traffic within the local network", "To route traffic to external networks", "To assign IP addresses to devices", "To encrypt data traffic"],
+        answer: "To route traffic to external networks"
+      },
+      {
+        question: "What is the purpose of a subnet mask in IP addressing?",
+        options: ["To identify the gateway address", "To assign MAC addresses", "To divide an IP address into network and host portions", "To encrypt data packets"],
+        answer: "To divide an IP address into network and host portions"
+      },
+      {
+        question: "Which protocol is used to translate domain names into IP addresses?",
+        options: ["DHCP", "FTP", "DNS", "SSH"],
+        answer: "DNS"
+      },
+      {
+        question: "Which protocol is used for secure data transmission in e-commerce transactions?",
+        options: ["HTTPS", "FTP", "SMTP", "ARP"],
+        answer: "HTTPS"
+      },
+      {
+        question: "Which protocol maps IP network addresses to MAC (physical) addresses of devices?",
+        options: ["ARP", "RARP", "ICMP", "PPP"],
+        answer: "ARP"
+      },
+      {
+        question: "Which protocol is used to securely transfer files over a network?",
+        options: ["FTP", "SFTP", "TFTP", "SMTP"],
+        answer: "SFTP"
+      },
+      {
+        question: "Which of the following is a private IP address?",
+        options: ["12.0.0.1", "168.172.19.39", "172.15.14.36", "192.168.24.43"],
+        answer: "192.168.24.43"
+      },
+      {
+        question: "Which command is used to test connectivity between two network devices?",
+        options: ["ipconfig", "ping", "netstat", "tracert"],
+        answer: "ping"
+      },
+      {
+        question: "Which protocol is used to securely transfer files over a network?",
+        options: ["FTP", "SFTP", "TFTP", "SMTP"],
+        answer: "SFTP"
+      },
+      {
+        question: "Which IP address class provides the most host addresses by default?",
+        options: ["Class A", "Class B", "Class C", "Class D"],
+        answer: "Class A"
+      },
+      {
+        question: "Which protocol is used for error reporting and diagnostics in IP networks?",
+        options: ["ICMP", "ARP", "TCP", "UDP"],
+        answer: "ICMP"
+      },
+      {
+        question: "What does the acronym VPN stand for?",
+        options: ["Virtual Private Network", "Verified Public Network", "Virtual Public Node", "Variable Private Network"],
+        answer: "Virtual Private Network"
+      },
+      {
+        question: "Which device forwards packets based on MAC addresses?",
+        options: ["Switch", "Router", "Hub", "Repeater"],
+        answer: "Switch"
+      },
+      {
+        question: "Which of the following is a broadcast address in IPv4?",
+        options: ["255.255.255.255", "0.0.0.0", "127.0.0.1", "192.168.1.1"],
+        answer: "255.255.255.255"
+      },
+      {
+        question: "What is the default subnet mask for a Class C IP address?",
+        options: ["255.0.0.0", "255.255.0.0", "255.255.255.0", "255.255.255.255"],
+        answer: "255.255.255.0"
+      },
+      {
+        question: "Which layer of the OSI model is responsible for establishing, managing, and terminating sessions?",
+        options: ["Session", "Transport", "Network", "Data Link"],
+        answer: "Session"
+      },
+      {
+        question: "What protocol is used for sending email between servers?",
+        options: ["SMTP", "POP3", "IMAP", "FTP"],
+        answer: "SMTP"
+      },
+      {
+        question: "What does MAC stand for in networking?",
+        options: ["Media Access Control", "Message Access Control", "Media Application Control", "Message Application Control"],
+        answer: "Media Access Control"
+      },
+      {
+        question: "Which of the following IP addresses is reserved for loopback testing?",
+        options: ["0.0.0.0", "127.0.0.1", "255.255.255.255", "192.168.0.1"],
+        answer: "127.0.0.1"
+      },
+      {
+        question: "What is the maximum length of a CAT5 cable segment?",
+        options: ["100 meters", "10 meters", "500 meters", "1 kilometer"],
+        answer: "100 meters"
+      }
+    ];
+
+    // Example A+ quiz questions (you can expand this list)
+    const aPlusQuiz = [
+      {
+        question: "What is the primary function of a power supply unit in a computer?",
+        options: [
+          "Store data",
+          "Convert AC to DC power",
+          "Process instructions",
+          "Display images"
+        ],
+        answer: "Convert AC to DC power"
+      },
+      {
+        question: "Which component is responsible for executing instructions in a computer?",
+        options: ["RAM", "CPU", "Hard Drive", "GPU"],
+        answer: "CPU"
+      },
+      {
+        question: "What type of memory is volatile and used for temporary data storage?",
+        options: ["ROM", "SSD", "RAM", "HDD"],
+        answer: "RAM"
+      },
+      {
+        question: "Which of the following connectors is used for legacy keyboards and mice?",
+        options: ["USB", "PS/2", "HDMI", "Ethernet"],
+        answer: "PS/2"
+      },
+      {
+        question: "What does BIOS stand for?",
+        options: [
+          "Basic Input Output System",
+          "Binary Input Output System",
+          "Basic Integrated Operating System",
+          "Binary Integrated Operating System"
+        ],
+        answer: "Basic Input Output System"
+      }
+    ];
+
+    // Track current quiz and state
+    let currentQuiz = networkPlusQuiz;
+    let currentQuizName = "CompTIA Network+";
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    // DOM elements
+    const quizTitleEl = document.getElementById("quiz-title");
+    const questionEl = document.getElementById("question");
+    const optionsEl = document.getElementById("options");
+    const nextBtn = document.getElementById("next-btn");
+    const scoreEl = document.getElementById("score");
+    const networkPlusBtn = document.getElementById("networkPlusBtn");
+    const aPlusBtn = document.getElementById("aPlusBtn");
+
+    // Load a question for the current quiz
+    function loadQuestion() {
+      answered = false;
+      nextBtn.style.display = "none";
+      scoreEl.textContent = "";
+
+      const q = currentQuiz[currentQuestionIndex];
+      questionEl.textContent = `Q${currentQuestionIndex + 1}. ${q.question}`;
+
+      optionsEl.innerHTML = "";
+      q.options.forEach(option => {
+        const btn = document.createElement("button");
+        btn.textContent = option;
+        btn.classList.add("option-btn");
+        btn.onclick = () => selectAnswer(btn, q.answer);
+        optionsEl.appendChild(btn);
+      });
+    }
+
+    // Handle answer selection
+    function selectAnswer(selectedBtn, correctAnswer) {
+      if (answered) return;
+      answered = true;
+
+      const buttons = optionsEl.querySelectorAll("button");
+      buttons.forEach(btn => btn.disabled = true);
+
+      if (selectedBtn.textContent === correctAnswer) {
+        selectedBtn.style.backgroundColor = "#22c55e"; // green
+        score++;
+      } else {
+        selectedBtn.style.backgroundColor = "#ef4444"; // red
+        // Highlight correct answer
+        buttons.forEach(btn => {
+          if (btn.textContent === correctAnswer) {
+            btn.style.backgroundColor = "#22c55e";
+          }
+        });
+      }
+
+      nextBtn.style.display = "block";
+    }
+
+    // Move to next question or show final score
+    function nextQuestion() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex >= currentQuiz.length) {
+        showScore();
+      } else {
+        loadQuestion();
+      }
+    }
+
+    // Display final score and reset option
+    function showScore() {
+      questionEl.textContent = `You scored ${score} out of ${currentQuiz.length}!`;
+      optionsEl.innerHTML = "";
+      nextBtn.style.display = "none";
+
+      // Reset score text
+      scoreEl.textContent = "Click any quiz button to restart.";
+    }
+
+    // Switch quiz handler
+    function switchQuiz(quizName) {
+      if (quizName === currentQuizName) return; // no change
+
+      if (quizName === "CompTIA Network+") {
+        currentQuiz = networkPlusQuiz;
+        currentQuizName = "CompTIA Network+";
+      } else if (quizName === "CompTIA A+") {
+        currentQuiz = aPlusQuiz;
+        currentQuizName = "CompTIA A+";
+      }
+
+      currentQuestionIndex = 0;
+      score = 0;
+      quizTitleEl.textContent = currentQuizName + " Quiz";
+      scoreEl.textContent = "";
+
+      // Update button active states
+      networkPlusBtn.classList.toggle("active", currentQuizName === "CompTIA Network+");
+      aPlusBtn.classList.toggle("active", currentQuizName === "CompTIA A+");
+
+      loadQuestion();
+    }
+
+    // Event listeners
+    nextBtn.addEventListener("click", nextQuestion);
+    networkPlusBtn.addEventListener("click", () => switchQuiz("CompTIA Network+"));
+    aPlusBtn.addEventListener("click", () => switchQuiz("CompTIA A+"));
+
+    // Load first question initially
+    loadQuestion();
+  </script>
+</body>
+</html>
